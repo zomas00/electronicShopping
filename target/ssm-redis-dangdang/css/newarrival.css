@@ -1,0 +1,14 @@
+@CHARSET "UTF-8";
+.newArrival-img{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.newArrival{
+    margin: 10px;
+    width: 28%;
+    text-align-all:center;
+    height: 35%;
+    float: left;
+}

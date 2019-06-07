@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xmlns:p="http://www.springframework.org/schema/p"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+                           http://www.springframework.org/schema/beans/spring-beans.xsd
+                           http://www.springframework.org/schema/context
+                           http://www.springframework.org/schema/context/spring-context.xsd
+                           http://www.springframework.org/schema/aop
+                           http://www.springframework.org/schema/aop/spring-aop.xsd
+                           http://www.springframework.org/schema/tx
+                           http://www.springframework.org/schema/tx/spring-tx.xsd">
+    <!-- 第一部分：配置数据库的连接 -->
+        <!-- 首先得解析数据库信息的配置文件db_mysql.properties
+            PropertyPlaceholderConfigurer
+            propertyPlaceholder
+         -->
+        <bean id="properties" class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+            <property name="location" value="classpath:db_mysql.properties"/>
+        </bean>
+        <!-- 配置dbcp连接池 四大参数 dbcp对应的BasicDataSource类-->
+        <bean id="dbcpPool" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close">
+            <!-- 访问数据库的4大参数 -->
+            <property name="driverClassName" value="${dbDriver}"/>
+            <property name="url" value="${dbUrl}"/>
+            <property name="username" value="${username}"/>
+            <property name="password" value="${password}"/>
+            <!--  配置数据库连接池伸缩性-->
+            <property name="initialSize" value="${initialSize}"/>
+            <property name="maxActive" value="${maxActive}"/>
+            <property name="maxIdle" value="${maxIdle}"/>
+            <property name="minIdle" value="${minIdle}"/>
+            <property name="maxWait" value="${maxWait}"/>
+        </bean>
+    <!-- 配置sqlSession的工厂 -->
+    <bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+        <property name="dataSource" ref="dbcpPool"/>
+        <property name="configLocation" value="classpath:mybatis-config.xml"/>
+    </bean>
+    <!-- 第二部分：创建Mapper对象 MapperScannerConfigurer 不写id按照类型进行匹配-->
+    <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+        <!-- 指明存放mapper的位置 -->
+        <property name="basePackage" value="com.dao"/>
+        <!-- 获取sqlSessionFactory对象并且提供他的名字 -->
+        <property name="sqlSessionFactoryBeanName" value="sqlSessionFactory"/>
+    </bean>
+    <!-- 第三部分：创建Service对象及其实施AOP配置-->
+        <!-- 扫描service中的注解 -->
+    <context:component-scan base-package="com.services"/>
+    <context:component-scan base-package="com.aop"/>
+    <!-- 声明自动为spring容器中那些配置@aspectJ切面的bean创建代理，织入切面。 -->
+    <aop:aspectj-autoproxy/>
+    <!-- 配置事务切面 -->
+        <!-- 注册事务管理器(还是bean标签) DataSourceTransactionManager-->
+        <bean id="txManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+            <property name="dataSource" ref="dbcpPool"/>
+        </bean>
+    <!-- 支持事务注解 -->
+    <tx:annotation-driven transaction-manager="txManager"/>
+
+    <!-- Jedis连接池配置对象 -->
+    <bean id="jedisPoolConfig" class="redis.clients.jedis.JedisPoolConfig">
+        <!-- 最大jedis对象100个 -->
+        <property name="maxTotal" value="100"/>
+        <!-- 最大闲置对象 -->
+        <property name="maxIdle" value="100"/>
+        <!-- 最小闲置对象 -->
+        <property name="minIdle" value="10"/>
+        <!--  最大等待时间 -->
+        <property name="maxWaitMillis" value="10000"/>
+        <!-- 连接耗尽时是否阻塞, false报异常,ture阻塞直到超时, 默认true -->
+        <property name="blockWhenExhausted" value="true"/>
+        <!-- 在获取连接池对象的时候检查有效性, 默认false(开启会影响性能) -->
+        <property name="testOnBorrow" value="false"/>
+        <!-- 返回连接池对象的时候检测有效性-->
+        <property name="testOnReturn" value="false"/>
+        <!-- 在创建连接池对象的时候检测有效性 -->
+        <property name="testOnCreate" value="false"/>
+    </bean>
+    <!-- 配置Jedis连接工厂-JedisConnectionFactory -->
+    <!--
+        使用p名称空间用来简化property子元素，简化为元素的属性注入
+        usePool 是否使用连接池
+        poolConfig-ref 注入连接池配置对象
+        hostName IP地址
+        port     端口号
+        password 密码
+        database 使用第几个数据库
+    -->
+    <bean id="jedisConnectionFactory" class="org.springframework.data.redis.connection.jedis.JedisConnectionFactory"
+          p:usePool="true" p:poolConfig-ref="jedisPoolConfig"
+          p:hostName="192.168.174.129" p:port="6379"
+          p:password="root" p:database="10">
+    </bean>
+    <!-- 配置Redis模板-RedisTemplate
+        注入连接对象的工厂
+    -->
+    <bean id="redisTemplate" class="org.springframework.data.redis.core.RedisTemplate"
+          p:connectionFactory-ref="jedisConnectionFactory">
+        <!-- 键值序列化
+             键值进行字符串的序列化
+        -->
+        <property name="keySerializer">
+            <bean class="org.springframework.data.redis.serializer.StringRedisSerializer">
+            </bean>
+        </property>
+        <!-- 转换为json字符串序列化存储 -->
+        <property name="valueSerializer">
+            <bean class="org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer">
+            </bean>
+        </property>
+        <!-- 针对hash类型数据的序列化解析器
+        hash的序列化key和value跟之前一样value通过json进行存储，key用String序列
+        -->
+        <property name="hashKeySerializer">
+            <bean class="org.springframework.data.redis.serializer.StringRedisSerializer"/>
+        </property>
+        <property name="hashValueSerializer">
+            <bean class="org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer"/>
+        </property>
+    </bean>
+</beans>

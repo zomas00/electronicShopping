@@ -1,0 +1,67 @@
+@CHARSET "UTF-8";
+
+#head{
+    width:960px;
+    height:100px;
+    border:1px solid;
+    margin:10px auto
+}
+#middle{
+    width:960px;
+    height:1600px;
+    border:1px solid;
+    margin:10px auto
+}
+#foot{
+    width:960px;
+    height:100px;
+    border:1px solid;
+    margin:5px auto
+}
+#left{
+    width:20%;
+    height:1580px;
+    border:1px solid;
+    float:left;
+    margin:10px
+}
+#center{
+    width:75%;
+    height:1550px;
+    border:1px solid;
+    float:left;
+    margin:10px auto
+}
+#right{
+    width:20%;
+    height:1550px;
+    border:1px solid;
+    float:left;
+    margin:10px
+}
+#center_head{
+    width:100%;
+    height:474px;
+    border:1px solid;
+    float:left;
+
+}
+#center_middle{
+    width:100%;
+    height:474px;
+    border:1px solid;
+    float:left
+}
+#center_foot{
+    width:100%;
+    height:474px;
+    border:1px solid;
+    float:left
+}
+#fenye{
+    width:75%;
+    height:1580px;
+    border:1px solid;
+    float:left;
+    margin:10px auto
+}

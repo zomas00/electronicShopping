@@ -1,0 +1,216 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dao.ProductMapper">
+    <resultMap id="BaseResultMap" type="com.domain.Product">
+        <id column="id" jdbcType="INTEGER" property="id"/>
+        <result column="product_name" jdbcType="VARCHAR" property="productName"/>
+        <result column="description" jdbcType="VARCHAR" property="description"/>
+        <result column="add_time" jdbcType="BIGINT" property="addTime"/>
+        <result column="fixed_price" jdbcType="DOUBLE" property="fixedPrice"/>
+        <result column="dang_price" jdbcType="DOUBLE" property="dangPrice"/>
+        <result column="keywords" jdbcType="VARCHAR" property="keywords"/>
+        <result column="has_deleted" jdbcType="INTEGER" property="hasDeleted"/>
+        <result column="product_pic" jdbcType="VARCHAR" property="productPic"/>
+    </resultMap>
+    <sql id="Base_Column_List">
+    id, product_name, description, add_time, fixed_price, dang_price, keywords, has_deleted,
+    product_pic
+  </sql>
+    <select id="selectByPrimaryKey" parameterType="java.lang.Integer" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from d_product
+        where id = #{id,jdbcType=INTEGER}
+    </select>
+    <!-- 查询出版社为清华大学出版社的图书信息
+    因为product表和book是一对一关系所以用association标签
+    resultMap返回的是一个结果集
+    编辑推荐
+    -->
+    <resultMap id="BookProductMap" type="Product" extends="BaseResultMap" >
+        <id property="id" column="product_id"/>
+        <association property="book" javaType="Book">
+            <id property="id" column="book_id"/>
+            <result property="author" column="author"/>
+            <result property="publishing" column="publishing"/>
+        </association>
+    </resultMap>
+    <select id="selectBookByPrimaryKey" resultMap="BookProductMap" parameterType="string">
+    select
+        p.id as product_id,
+        p.product_pic,
+        p.product_name,
+        p.description,
+        p.fixed_price,
+        p.dang_price,
+        b.id as book_id,
+        b.author,
+        b.publishing
+    from d_product p
+    left join d_book b
+    on p.id=b.id
+    where b.publishing = #{publishing};
+  </select>
+    <resultMap id="liangbiaoMap" type="Product" extends="BaseResultMap">
+        <id property="id" column="dpid"/>
+        <association property="book" javaType="Book" fetchType="eager">
+            <id property="id" column="dbid"/>
+            <result property="author" column="dbauthor"/>
+            <result property="authorSummary" column="dbauthorsummary"/>
+            <result property="publishTime" column="dbpublishtime"/>
+            <result property="publishing" column="dbpublishing"/>
+            <result property="catalogue" column="dbcatalogue"/>
+        </association>
+    </resultMap>
+    <select id="liangbiaochaxun" parameterType="integer" resultMap="BaseResultMap">
+       SELECT
+        dp.id AS dpid,
+        db.id AS dbid,
+        db.author AS dbauthor,
+        db.author_summary AS dbauthorsummary,
+        db.publish_time AS dbpublishtime,
+        db.publishing AS dbpublishing,
+        db.catalogue AS dbcatalogue
+      FROM d_product dp
+      LEFT JOIN d_book db
+      ON dp.id = db.id
+      where dp.id = #{id}
+    </select>
+    <!-- 最新上架 -->
+    <select id="selectProduct" resultMap="BaseResultMap" parameterType="integer">
+        select
+               product_pic,
+               product_name,
+               fixed_price,
+               dang_price
+        from d_product
+        order by add_time  desc limit #{num}
+    </select>
+    <!-- 热销图书 -->
+    <resultMap id="NumberProductMap" type="Product" extends="BaseResultMap">
+        <id property="id" column="product_id"/>
+        <id property="isum" column="isum"/>
+    </resultMap>
+    <select id="selectNumberProduct" resultMap="NumberProductMap" parameterType="integer">
+     SELECT
+            SUM(i.product_num)  as isum,
+			p.id as product_id,
+			p.product_name,p.product_pic,
+			p.dang_price,p.fixed_price
+     FROM d_product p
+     LEFT JOIN d_item i
+     ON i.product_id = p.id
+     GROUP BY i.product_id
+     ORDER BY isum DESC LIMIT #{num}
+    </select>
+    <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer">
+    delete from d_product
+    where id = #{id,jdbcType=INTEGER}
+  </delete>
+    <insert id="insert" keyColumn="id" keyProperty="id" parameterType="com.domain.Product" useGeneratedKeys="true">
+    insert into d_product (product_name, description, add_time, 
+      fixed_price, dang_price, keywords, 
+      has_deleted, product_pic)
+    values (#{productName,jdbcType=VARCHAR}, #{description,jdbcType=VARCHAR}, #{addTime,jdbcType=BIGINT}, 
+      #{fixedPrice,jdbcType=DOUBLE}, #{dangPrice,jdbcType=DOUBLE}, #{keywords,jdbcType=VARCHAR}, 
+      #{hasDeleted,jdbcType=INTEGER}, #{productPic,jdbcType=VARCHAR})
+  </insert>
+    <insert id="insertSelective" keyColumn="id" keyProperty="id" parameterType="com.domain.Product"
+            useGeneratedKeys="true">
+        insert into d_product
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="productName != null">
+                product_name,
+            </if>
+            <if test="description != null">
+                description,
+            </if>
+            <if test="addTime != null">
+                add_time,
+            </if>
+            <if test="fixedPrice != null">
+                fixed_price,
+            </if>
+            <if test="dangPrice != null">
+                dang_price,
+            </if>
+            <if test="keywords != null">
+                keywords,
+            </if>
+            <if test="hasDeleted != null">
+                has_deleted,
+            </if>
+            <if test="productPic != null">
+                product_pic,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="productName != null">
+                #{productName,jdbcType=VARCHAR},
+            </if>
+            <if test="description != null">
+                #{description,jdbcType=VARCHAR},
+            </if>
+            <if test="addTime != null">
+                #{addTime,jdbcType=BIGINT},
+            </if>
+            <if test="fixedPrice != null">
+                #{fixedPrice,jdbcType=DOUBLE},
+            </if>
+            <if test="dangPrice != null">
+                #{dangPrice,jdbcType=DOUBLE},
+            </if>
+            <if test="keywords != null">
+                #{keywords,jdbcType=VARCHAR},
+            </if>
+            <if test="hasDeleted != null">
+                #{hasDeleted,jdbcType=INTEGER},
+            </if>
+            <if test="productPic != null">
+                #{productPic,jdbcType=VARCHAR},
+            </if>
+        </trim>
+    </insert>
+    <update id="updateByPrimaryKeySelective" parameterType="com.domain.Product">
+        update d_product
+        <set>
+            <if test="productName != null">
+                product_name = #{productName,jdbcType=VARCHAR},
+            </if>
+            <if test="description != null">
+                description = #{description,jdbcType=VARCHAR},
+            </if>
+            <if test="addTime != null">
+                add_time = #{addTime,jdbcType=BIGINT},
+            </if>
+            <if test="fixedPrice != null">
+                fixed_price = #{fixedPrice,jdbcType=DOUBLE},
+            </if>
+            <if test="dangPrice != null">
+                dang_price = #{dangPrice,jdbcType=DOUBLE},
+            </if>
+            <if test="keywords != null">
+                keywords = #{keywords,jdbcType=VARCHAR},
+            </if>
+            <if test="hasDeleted != null">
+                has_deleted = #{hasDeleted,jdbcType=INTEGER},
+            </if>
+            <if test="productPic != null">
+                product_pic = #{productPic,jdbcType=VARCHAR},
+            </if>
+        </set>
+        where id = #{id,jdbcType=INTEGER}
+    </update>
+    <update id="updateByPrimaryKey" parameterType="com.domain.Product">
+    update d_product
+    set product_name = #{productName,jdbcType=VARCHAR},
+      description = #{description,jdbcType=VARCHAR},
+      add_time = #{addTime,jdbcType=BIGINT},
+      fixed_price = #{fixedPrice,jdbcType=DOUBLE},
+      dang_price = #{dangPrice,jdbcType=DOUBLE},
+      keywords = #{keywords,jdbcType=VARCHAR},
+      has_deleted = #{hasDeleted,jdbcType=INTEGER},
+      product_pic = #{productPic,jdbcType=VARCHAR}
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+</mapper>

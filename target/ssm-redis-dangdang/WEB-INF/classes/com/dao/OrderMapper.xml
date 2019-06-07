@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dao.OrderMapper">
+  <resultMap id="BaseResultMap" type="com.domain.Order">
+    <id column="id" jdbcType="INTEGER" property="id" />
+    <result column="user_id" jdbcType="INTEGER" property="userId" />
+    <result column="status" jdbcType="INTEGER" property="status" />
+    <result column="order_time" jdbcType="BIGINT" property="orderTime" />
+    <result column="order_desc" jdbcType="VARCHAR" property="orderDesc" />
+    <result column="total_price" jdbcType="DOUBLE" property="totalPrice" />
+    <result column="receive_name" jdbcType="VARCHAR" property="receiveName" />
+    <result column="full_address" jdbcType="VARCHAR" property="fullAddress" />
+    <result column="postal_code" jdbcType="VARCHAR" property="postalCode" />
+    <result column="mobile" jdbcType="VARCHAR" property="mobile" />
+    <result column="phone" jdbcType="VARCHAR" property="phone" />
+  </resultMap>
+  <sql id="Base_Column_List">
+    id, user_id, `status`, order_time, order_desc, total_price, receive_name, full_address, 
+    postal_code, mobile, phone
+  </sql>
+  <select id="selectByPrimaryKey" parameterType="java.lang.Integer" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from d_order
+    where id = #{id,jdbcType=INTEGER}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer">
+    delete from d_order
+    where id = #{id,jdbcType=INTEGER}
+  </delete>
+  <insert id="insert" keyColumn="id" keyProperty="id" parameterType="com.domain.Order" useGeneratedKeys="true">
+    insert into d_order (user_id, `status`, order_time, 
+      order_desc, total_price, receive_name, 
+      full_address, postal_code, mobile, 
+      phone)
+    values (#{userId,jdbcType=INTEGER}, #{status,jdbcType=INTEGER}, #{orderTime,jdbcType=BIGINT}, 
+      #{orderDesc,jdbcType=VARCHAR}, #{totalPrice,jdbcType=DOUBLE}, #{receiveName,jdbcType=VARCHAR}, 
+      #{fullAddress,jdbcType=VARCHAR}, #{postalCode,jdbcType=VARCHAR}, #{mobile,jdbcType=VARCHAR}, 
+      #{phone,jdbcType=VARCHAR})
+  </insert>
+  <insert id="insertSelective" keyColumn="id" keyProperty="id" parameterType="com.domain.Order" useGeneratedKeys="true">
+    insert into d_order
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="userId != null">
+        user_id,
+      </if>
+      <if test="status != null">
+        `status`,
+      </if>
+      <if test="orderTime != null">
+        order_time,
+      </if>
+      <if test="orderDesc != null">
+        order_desc,
+      </if>
+      <if test="totalPrice != null">
+        total_price,
+      </if>
+      <if test="receiveName != null">
+        receive_name,
+      </if>
+      <if test="fullAddress != null">
+        full_address,
+      </if>
+      <if test="postalCode != null">
+        postal_code,
+      </if>
+      <if test="mobile != null">
+        mobile,
+      </if>
+      <if test="phone != null">
+        phone,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="userId != null">
+        #{userId,jdbcType=INTEGER},
+      </if>
+      <if test="status != null">
+        #{status,jdbcType=INTEGER},
+      </if>
+      <if test="orderTime != null">
+        #{orderTime,jdbcType=BIGINT},
+      </if>
+      <if test="orderDesc != null">
+        #{orderDesc,jdbcType=VARCHAR},
+      </if>
+      <if test="totalPrice != null">
+        #{totalPrice,jdbcType=DOUBLE},
+      </if>
+      <if test="receiveName != null">
+        #{receiveName,jdbcType=VARCHAR},
+      </if>
+      <if test="fullAddress != null">
+        #{fullAddress,jdbcType=VARCHAR},
+      </if>
+      <if test="postalCode != null">
+        #{postalCode,jdbcType=VARCHAR},
+      </if>
+      <if test="mobile != null">
+        #{mobile,jdbcType=VARCHAR},
+      </if>
+      <if test="phone != null">
+        #{phone,jdbcType=VARCHAR},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.domain.Order">
+    update d_order
+    <set>
+      <if test="userId != null">
+        user_id = #{userId,jdbcType=INTEGER},
+      </if>
+      <if test="status != null">
+        `status` = #{status,jdbcType=INTEGER},
+      </if>
+      <if test="orderTime != null">
+        order_time = #{orderTime,jdbcType=BIGINT},
+      </if>
+      <if test="orderDesc != null">
+        order_desc = #{orderDesc,jdbcType=VARCHAR},
+      </if>
+      <if test="totalPrice != null">
+        total_price = #{totalPrice,jdbcType=DOUBLE},
+      </if>
+      <if test="receiveName != null">
+        receive_name = #{receiveName,jdbcType=VARCHAR},
+      </if>
+      <if test="fullAddress != null">
+        full_address = #{fullAddress,jdbcType=VARCHAR},
+      </if>
+      <if test="postalCode != null">
+        postal_code = #{postalCode,jdbcType=VARCHAR},
+      </if>
+      <if test="mobile != null">
+        mobile = #{mobile,jdbcType=VARCHAR},
+      </if>
+      <if test="phone != null">
+        phone = #{phone,jdbcType=VARCHAR},
+      </if>
+    </set>
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.domain.Order">
+    update d_order
+    set user_id = #{userId,jdbcType=INTEGER},
+      `status` = #{status,jdbcType=INTEGER},
+      order_time = #{orderTime,jdbcType=BIGINT},
+      order_desc = #{orderDesc,jdbcType=VARCHAR},
+      total_price = #{totalPrice,jdbcType=DOUBLE},
+      receive_name = #{receiveName,jdbcType=VARCHAR},
+      full_address = #{fullAddress,jdbcType=VARCHAR},
+      postal_code = #{postalCode,jdbcType=VARCHAR},
+      mobile = #{mobile,jdbcType=VARCHAR},
+      phone = #{phone,jdbcType=VARCHAR}
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+</mapper>

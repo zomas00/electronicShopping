@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE configuration PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-config.dtd">
+<configuration>
+    <!-- 配置在控制台输出日志信息 -->
+    <!--
+    logImpl可选的值有：SLF4J、LOG4J、LOG4J2、JDK_LOGGING、
+    COMMONS_LOGGING、STDOUT_LOGGING、NO_LOGGING
+    或者是实现了接口org.apache.ibatis.logging.Log的类的完全限定类名，
+    并且这个类的构造函数需要是以一个字符串（String类型）为参数的
+    -->
+    <settings>
+        <setting name="logImpl" value="STDOUT_LOGGING"/>
+        <!-- 配置二级缓存 -->
+        <setting name="cacheEnabled" value="true"/>
+    </settings>
+    <!-- 设置别名给mapper.xml用的 如果用package进行批量定义那么就是按照类的名称作为别名-->
+    <typeAliases>
+        <package name="com.domain"/>
+    </typeAliases>
+    <!-- 注册mapper文件 -->
+    <mappers>
+        <package name="com.dao"/>
+    </mappers>
+</configuration>
